@@ -156,10 +156,7 @@ architecture Behavioral of ili9341_ctrl is
         
     );
     
-    signal ILI9341_INIT_MEM : t_screen_mem := (
-        x"C_2C",    -- Memory Write
-        
-    
+
     -- time delays (sysclk-adaptive)
     constant SYSCLK_PERIOD_NS : integer := 1000000000 / SYSCLK_FREQ;   -- eg 40ns for 25MHz
     constant DELAY_10_US : integer := 10 * 1000 / SYSCLK_PERIOD_NS;
