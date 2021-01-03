@@ -62,6 +62,29 @@ architecture Behavioral of ili9341_top is
     signal framebuffer_addrb : std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
     signal framebuffer_dob  : std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
 
+    -- mixed language support requires component declarations
+    component simple_dual_two_clock_bram is 
+    generic(
+        ADDR_W         : integer;
+        DATA_W         : integer;
+        DEPTH          : integer;
+        USE_INIT_FILE  : std_logic;
+	    INIT_FILE_NAME : string
+    );
+    port(
+        clka   : in    std_logic;
+        clkb   : in    std_logic;
+        ena    : in    std_logic;
+        enb    : in    std_logic;
+        wea    : in    std_logic;
+        addra  : in    std_logic_vector(ADDR_W-1 downto 0);
+        addrb  : in    std_logic_vector(ADDR_W-1 downto 0);
+        dia    : in    std_logic_vector(DATA_W-1 downto 0);
+        dob    : out   std_logic_vector(DATA_W-1 downto 0)
+    );
+    end component simple_dual_two_clock_bram;
+    
+    
     
     
 begin
@@ -96,14 +119,15 @@ u_ili9341_ctrl : entity work.ili9341_ctrl
         
         
     );
-    
-u_framebuffer : entity work.simple_dual_two_clocks
+    -- system verilog for simpler file IO
+    -- uses component declaration above to tell us what the port types are
+u_framebuffer : simple_dual_two_clock_bram
     generic map (
         ADDR_W => FRAMEBUFFER_ADDR_W,
         DATA_W => FRAMEBUFFER_READ_SIZE,
         DEPTH => FRAMEBUFFER_DEPTH,
-        USE_INIT_FILE => true,
-        INIT_FILE_NAME => "../resources/hex/KAT_iron_240x320.hex"
+        USE_INIT_FILE => '1',
+        INIT_FILE_NAME => "D:/Documents/vivado/ili9341_parallel_controller/resources/hex/KAT_iron_240x320.hex"
     )
     port map (
         clka => '0', 
