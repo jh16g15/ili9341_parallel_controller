@@ -9,10 +9,16 @@ IMAGE_WIDTH = 240
 IMAGE_HEIGHT = 320
 PADDED_WIDTH = 256  # pad out to 256 wide for easier addressing
 
+PAD_WIDTH_ENABLE = False
+
 BITS_PER_PIXEL = 8
 
-TOTAL_MEM_BITS = BITS_PER_PIXEL * PADDED_WIDTH * IMAGE_HEIGHT 
-FGPA_MEM_ARRAY_LEN =  PADDED_WIDTH * IMAGE_HEIGHT
+if PAD_WIDTH_ENABLE:
+    IMAGE_WIDTH = PADDED_WIDTH     
+    
+TOTAL_MEM_BITS = BITS_PER_PIXEL * IMAGE_WIDTH * IMAGE_HEIGHT 
+
+FGPA_MEM_ARRAY_LEN =  IMAGE_WIDTH * IMAGE_HEIGHT
 print("Total Bits: " + str(TOTAL_MEM_BITS))
 print("FPGA Memory Array Length: " + str(FGPA_MEM_ARRAY_LEN))
 
@@ -25,10 +31,10 @@ pixels = image.load()
 # GGGRRRBB
 out_file = open(IMAGE_LOC + "hex/" +  IMAGE_NAME + ".hex", "w")
 for y in range(IMAGE_HEIGHT):
-    for x in range(PADDED_WIDTH):
+    for x in range(IMAGE_WIDTH):
         try:
             out_file.write(f'{pixels[x,y]:02x}')    # 0-padded, 2 digit hex
-        except IndexError:
+        except IndexError:  # if we have enabled padding
             out_file.write(f'{0:02x}')
         out_file.write("\n")
 
