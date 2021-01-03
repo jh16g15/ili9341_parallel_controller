@@ -2,8 +2,8 @@
 # https://www.youtube.com/watch?v=uqY3FMuMuRo
 from PIL import Image
 
-IMAGE_LOC = "D:/Documents/vivado/ili9341_parallel_controller/resources/"
-IMAGE_NAME = "KAT_iron_240x320"
+IMAGE_LOC = "D:/Documents/vivado/ili9341_parallel_controller/resources/edited/"
+IMAGE_NAME = "bike"
 IMAGE_EXT = ".png"
 IMAGE_WIDTH = 240
 IMAGE_HEIGHT = 320
@@ -29,7 +29,7 @@ pixels = image.load()
 ## Output File Format
 # This outputs 1 pixel (byte) per line
 # GGGRRRBB
-out_file = open(IMAGE_LOC + "hex/" +  IMAGE_NAME + ".hex", "w")
+out_file = open(IMAGE_LOC + "../hex/" +  IMAGE_NAME + ".hex", "w")
 for y in range(IMAGE_HEIGHT):
     for x in range(IMAGE_WIDTH):
         try:

@@ -107,11 +107,21 @@ u_clk_wiz : clk_wiz_0
 
 u_ili9341_top : entity work.ili9341_top
     generic map (
+        SYSCLK_FREQ => 25000000,
         DEBUG_ILAS => false
     )
     port map (
-        SYSCLK          => sysclk,
+        -- for framebuffer read port and ILI9341
+        sysclk          => sysclk,
         reset_in        => sys_reset,
+        
+        -- unused Framebuffer Write port (for microblaze or other BRAM controller)
+        framebuffer_w_clk_in          => '0',
+        framebuffer_w_enable_in       => '0',
+        framebuffer_w_write_enable_in => '0',
+        framebuffer_w_addr_in         => (others => '0'),
+        framebuffer_w_data_in         => (others => '0'),
+        
         ili9341_CS_N    => ili9341_CS_N   ,   
         ili9341_BLC     => ili9341_BLC    ,  
         ili9341_RESET_N => ili9341_RESET_N,

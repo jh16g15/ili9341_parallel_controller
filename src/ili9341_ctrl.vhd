@@ -45,10 +45,10 @@ Port (
     reset_in                : in std_logic;
     
     -- framebuffer read port
-    framebuffer_clkb_out    : out std_logic;
-    framebuffer_enb_out     : out std_logic := '0';
-    framebuffer_addrb_out   : out std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
-    framebuffer_dob_in      : in  std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
+    framebuffer_read_clk_out    : out std_logic;
+    framebuffer_read_en_out     : out std_logic := '0';
+    framebuffer_read_addr_out   : out std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
+    framebuffer_read_data_in    : in  std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
     
     -- physical pins for ILI9341
     ili9341_CS_N_OUT        : out std_logic;    -- Active Low Chip Select
@@ -144,10 +144,10 @@ architecture Behavioral of ili9341_ctrl is
 begin
 
 -- send the clock out for the read side RAM port
-framebuffer_clkb_out <= sysclk_in;
+framebuffer_read_clk_out <= sysclk_in;
 
 
-framebuffer_addrb_out <= std_logic_vector(to_unsigned(framebuffer_counter, FRAMEBUFFER_ADDR_W));
+framebuffer_read_addr_out <= std_logic_vector(to_unsigned(framebuffer_counter, FRAMEBUFFER_ADDR_W));
 
 
 --OLD
@@ -175,7 +175,7 @@ begin
             state <= HARDWARE_RESET;
             delay_counter <= 0;
             init_mem_counter <= 0;
-            framebuffer_enb_out <= '0'; -- disable reading from the framebuffer until we have initialised the display
+            framebuffer_read_en_out <= '0'; -- disable reading from the framebuffer until we have initialised the display
         else
             case(state) is
                 when HARDWARE_RESET => 
@@ -259,7 +259,7 @@ begin
                     if init_mem_counter = INIT_MEM_ITEMS -1 then
                         return_state <= ACTIVE;   -- initialisation finshed
                         
-                        framebuffer_enb_out <= '1'; -- enable framebuffer read
+                        framebuffer_read_en_out <= '1'; -- enable framebuffer read
                         
                         framebuffer_counter <= 0; -- setup read of first pixel
                         
@@ -281,7 +281,7 @@ begin
                     
                     -- read pixel value from framebuffer, colour conversion happens combinationally above
                     -- We use 18-bit colour for now, as the transfers are a bit nicer
-                    pixel_data <= framebuffer_dob_in; 
+                    pixel_data <= framebuffer_read_data_in; 
                 
 
                 when DATA_R => 

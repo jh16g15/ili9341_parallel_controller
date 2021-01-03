@@ -61,7 +61,7 @@ reset <= '0' after CLK_PERIOD * 2;
 
 u_ili9341_top : entity work.ili9341_top
 generic map (
---    SYSCLK_FREQ             => 25000000, -- 25 MHz  
+    SYSCLK_FREQ             => 25000000, -- 25 MHz  
     SIM_DELAY_REDUCTION_FACTOR => 10000   -- reduce the 120ms delay to 12us to reduce sim time
 )
 Port map (
@@ -69,6 +69,13 @@ Port map (
     sysclk                  => sysclk,  -- 25 MHz (40 ns) Write cycle (lowtime+hightime of WR strobe) 66ns (over 2 clock cycles)
     reset_in                => reset,  
     
+    -- unused Framebuffer Write port (for microblaze or other BRAM controller)
+    framebuffer_w_clk_in          => '0',
+    framebuffer_w_enable_in       => '0',
+    framebuffer_w_write_enable_in => '0',
+    framebuffer_w_addr_in         => (others => '0'),
+    framebuffer_w_data_in         => (others => '0'),
+                
     -- physical pins
     ili9341_CS_N       => ili9341_CS_N   ,  -- Active Low Chip Select
     ili9341_BLC        => ili9341_BLC    ,  -- Backlight Control  (active high)
