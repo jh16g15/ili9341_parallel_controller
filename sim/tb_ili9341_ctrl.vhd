@@ -40,7 +40,7 @@ architecture tb of tb_ili9341_ctrl is
     constant CLK_PERIOD : time := 40 ns;    -- 25 MHz
 
     signal sysclk : std_logic := '0';
-    signal reset : std_logic := '0';
+    signal reset : std_logic := '1';
     
     signal ili9341_CS_N        : std_logic;
     signal ili9341_BLC         : std_logic;
@@ -53,13 +53,13 @@ architecture tb of tb_ili9341_ctrl is
     
     signal ili9341_DATA_OUT     : std_logic_vector(7 downto 0);
     
-begin 
+begin
 
 sysclk <= not sysclk after CLK_PERIOD/2;
 
+reset <= '0' after CLK_PERIOD * 2;
 
-
-u_ili9341_ctrl : entity work.ili9341_ctrl
+u_ili9341_top : entity work.ili9341_top
 generic map (
     SYSCLK_FREQ             => 25000000, -- 25 MHz  
     SIM_DELAY_REDUCTION_FACTOR => 10000   -- reduce the 120ms delay to 12us to reduce sim time

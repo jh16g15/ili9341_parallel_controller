@@ -5,20 +5,21 @@
    <db_ref_list>
       <db_ref path="tb_ili9341_ctrl_behav.wdb" id="1">
          <top_modules>
+            <top_module name="glbl" />
             <top_module name="tb_ili9341_ctrl" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="5291fs"></ZoomEndTime>
-      <Cursor1Time time="19993fs"></Cursor1Time>
+      <ZoomEndTime time="2085053fs"></ZoomEndTime>
+      <Cursor1Time time="1000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="346"></NameColumnWidth>
-      <ValueColumnWidth column_width="282"></ValueColumnWidth>
+      <ValueColumnWidth column_width="266"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="26" />
+   <WVObjectSize size="34" />
    <wvobject fp_name="/tb_ili9341_ctrl/sysclk" type="logic">
       <obj_property name="ElementShortName">sysclk</obj_property>
       <obj_property name="ObjectShortName">sysclk</obj_property>
@@ -71,56 +72,88 @@
       <obj_property name="label">Controller</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/state" type="other">
-      <obj_property name="ElementShortName">state</obj_property>
-      <obj_property name="ObjectShortName">state</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/pixel_data" type="array">
+      <obj_property name="ElementShortName">pixel_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">pixel_data[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/return_state" type="other">
-      <obj_property name="ElementShortName">return_state</obj_property>
-      <obj_property name="ObjectShortName">return_state</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/red_data" type="array">
+      <obj_property name="ElementShortName">red_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">red_data[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/send_cmd_or_data" type="logic">
-      <obj_property name="ElementShortName">send_cmd_or_data</obj_property>
-      <obj_property name="ObjectShortName">send_cmd_or_data</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/green_data" type="array">
+      <obj_property name="ElementShortName">green_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">green_data[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/word_to_send" type="array">
-      <obj_property name="ElementShortName">word_to_send[11:0]</obj_property>
-      <obj_property name="ObjectShortName">word_to_send[11:0]</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/blue_data" type="array">
+      <obj_property name="ElementShortName">blue_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">blue_data[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/data_count_to_send" type="other">
-      <obj_property name="ElementShortName">data_count_to_send</obj_property>
-      <obj_property name="ObjectShortName">data_count_to_send</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/delay_counter" type="other">
-      <obj_property name="ElementShortName">delay_counter</obj_property>
-      <obj_property name="ObjectShortName">delay_counter</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/init_mem_counter" type="other">
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/init_mem_counter" type="other">
       <obj_property name="ElementShortName">init_mem_counter</obj_property>
       <obj_property name="ObjectShortName">init_mem_counter</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/SYSCLK_FREQ" type="other">
-      <obj_property name="ElementShortName">SYSCLK_FREQ</obj_property>
-      <obj_property name="ObjectShortName">SYSCLK_FREQ</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/framebuffer_counter" type="other">
+      <obj_property name="ElementShortName">framebuffer_counter</obj_property>
+      <obj_property name="ObjectShortName">framebuffer_counter</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/INIT_MEM_ITEMS" type="other">
-      <obj_property name="ElementShortName">INIT_MEM_ITEMS</obj_property>
-      <obj_property name="ObjectShortName">INIT_MEM_ITEMS</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/state" type="other">
+      <obj_property name="ElementShortName">state</obj_property>
+      <obj_property name="ObjectShortName">state</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/ILI9341_INIT_MEM" type="array">
-      <obj_property name="ElementShortName">ILI9341_INIT_MEM[0:20][11:0]</obj_property>
-      <obj_property name="ObjectShortName">ILI9341_INIT_MEM[0:20][11:0]</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/return_state" type="other">
+      <obj_property name="ElementShortName">return_state</obj_property>
+      <obj_property name="ObjectShortName">return_state</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/SYSCLK_PERIOD_NS" type="other">
-      <obj_property name="ElementShortName">SYSCLK_PERIOD_NS</obj_property>
-      <obj_property name="ObjectShortName">SYSCLK_PERIOD_NS</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/send_cmd_or_data" type="logic">
+      <obj_property name="ElementShortName">send_cmd_or_data</obj_property>
+      <obj_property name="ObjectShortName">send_cmd_or_data</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/DELAY_10_US" type="other">
-      <obj_property name="ElementShortName">DELAY_10_US</obj_property>
-      <obj_property name="ObjectShortName">DELAY_10_US</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/word_to_send" type="array">
+      <obj_property name="ElementShortName">word_to_send[11:0]</obj_property>
+      <obj_property name="ObjectShortName">word_to_send[11:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_ctrl/DELAY_120_MS" type="other">
-      <obj_property name="ElementShortName">DELAY_120_MS</obj_property>
-      <obj_property name="ObjectShortName">DELAY_120_MS</obj_property>
+   <wvobject type="divider" fp_name="divider37">
+      <obj_property name="label">Framebuffer</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/framebuffer_clkb_out" type="logic">
+      <obj_property name="ElementShortName">framebuffer_clkb_out</obj_property>
+      <obj_property name="ObjectShortName">framebuffer_clkb_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/framebuffer_enb_out" type="logic">
+      <obj_property name="ElementShortName">framebuffer_enb_out</obj_property>
+      <obj_property name="ObjectShortName">framebuffer_enb_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/framebuffer_addrb_out" type="array">
+      <obj_property name="ElementShortName">framebuffer_addrb_out[16:0]</obj_property>
+      <obj_property name="ObjectShortName">framebuffer_addrb_out[16:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_ili9341_ctrl/framebuffer_dob_in" type="array">
+      <obj_property name="ElementShortName">framebuffer_dob_in[7:0]</obj_property>
+      <obj_property name="ObjectShortName">framebuffer_dob_in[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/USE_INIT_FILE" type="other">
+      <obj_property name="ElementShortName">USE_INIT_FILE</obj_property>
+      <obj_property name="ObjectShortName">USE_INIT_FILE</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/INIT_FILE_NAME" type="array">
+      <obj_property name="ElementShortName">INIT_FILE_NAME[1:37]</obj_property>
+      <obj_property name="ObjectShortName">INIT_FILE_NAME[1:37]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DEPTH" type="other">
+      <obj_property name="ElementShortName">DEPTH</obj_property>
+      <obj_property name="ObjectShortName">DEPTH</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/ADDR_W" type="other">
+      <obj_property name="ElementShortName">ADDR_W</obj_property>
+      <obj_property name="ObjectShortName">ADDR_W</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DATA_W" type="other">
+      <obj_property name="ElementShortName">DATA_W</obj_property>
+      <obj_property name="ObjectShortName">DATA_W</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DEPTH" type="other">
+      <obj_property name="ElementShortName">DEPTH</obj_property>
+      <obj_property name="ObjectShortName">DEPTH</obj_property>
    </wvobject>
 </wave_config>

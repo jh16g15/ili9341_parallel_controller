@@ -14,7 +14,9 @@ use std.textio.all;
 
 entity ili9341_top is 
     generic(
-        DEBUG_ILAS : boolean := false
+        DEBUG_ILAS : boolean := false;
+        
+        SIM_DELAY_REDUCTION_FACTOR : integer := 1 -- for synthesis, no delay reduction
     );
     port(
         SYSCLK  : in std_logic;
@@ -46,16 +48,41 @@ entity ili9341_top is
 end entity ili9341_top;
 
 architecture Behavioral of ili9341_top is
+--    constant FRAMEBUFFER_DEPTH : integer := 256 * 320;  -- padded Width * Height (81920)
+    constant FRAMEBUFFER_DEPTH : integer := 240 * 320;  -- Image Width * Height (76800)
+    
+    constant FRAMEBUFFER_ADDR_W : integer := 17;
+    
+    constant BITS_PER_PIXEL : integer := 8;
+    constant PIXELS_PER_WORD : integer := 1;
+    constant FRAMEBUFFER_READ_SIZE : integer := BITS_PER_PIXEL * PIXELS_PER_WORD;
 
+    signal framebuffer_clkb : std_logic;
+    signal framebuffer_enb  : std_logic;
+    signal framebuffer_addrb : std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
+    signal framebuffer_dob  : std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
+
+    
+    
 begin
 
 u_ili9341_ctrl : entity work.ili9341_ctrl
     generic map (
-        SYSCLK_FREQ => 25_000_000
+        SYSCLK_FREQ => 25_000_000,
+        SIM_DELAY_REDUCTION_FACTOR => SIM_DELAY_REDUCTION_FACTOR,   -- reduce the 120ms delay to 12us to reduce sim time
+        FRAMEBUFFER_ADDR_W => FRAMEBUFFER_ADDR_W,
+        FRAMEBUFFER_READ_SIZE => FRAMEBUFFER_READ_SIZE,
+        FRAMEBUFFER_DEPTH => FRAMEBUFFER_DEPTH
     )
     port map (
         sysclk_in   => SYSCLK,
         reset_in    => reset_in,
+        
+        framebuffer_clkb_out    => framebuffer_clkb ,
+        framebuffer_enb_out     => framebuffer_enb  ,
+        framebuffer_addrb_out   => framebuffer_addrb,
+        framebuffer_dob_in      => framebuffer_dob  ,
+        
         ili9341_CS_N_OUT    => ili9341_CS_N   ,   
         ili9341_BLC_OUT     => ili9341_BLC    ,  
         ili9341_RESET_N_OUT => ili9341_RESET_N,
@@ -69,6 +96,29 @@ u_ili9341_ctrl : entity work.ili9341_ctrl
         
         
     );
+    
+u_framebuffer : entity work.simple_dual_two_clocks
+    generic map (
+        ADDR_W => FRAMEBUFFER_ADDR_W,
+        DATA_W => FRAMEBUFFER_READ_SIZE,
+        DEPTH => FRAMEBUFFER_DEPTH,
+        USE_INIT_FILE => true,
+        INIT_FILE_NAME => "../resources/hex/KAT_iron_240x320.hex"
+    )
+    port map (
+        clka => '0', 
+        clkb => framebuffer_clkb,
+        ena => '0',
+        enb => framebuffer_enb,
+        wea => '0', 
+        addra => (others => '0'),
+        addrb => framebuffer_addrb, 
+        dia => (others => '0'),
+        dob => framebuffer_dob 
+    
+    );
+    
+    
 
 
 end architecture;

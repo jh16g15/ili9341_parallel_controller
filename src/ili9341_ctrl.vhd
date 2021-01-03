@@ -36,12 +36,19 @@ generic (
     SYSCLK_FREQ             : integer := 25000000; -- 25 MHz 
     SIM_DELAY_REDUCTION_FACTOR : integer := 1;      -- 1 for disabled
     FRAMEBUFFER_ADDR_W      : integer := 17;
-    FRAMEBUFFER_READ_SIZE   : integer := 8
+    FRAMEBUFFER_READ_SIZE   : integer := 8;
+    FRAMEBUFFER_DEPTH       : integer := 76800
 );
 Port (
     
     sysclk_in               : in std_logic;  -- 25 MHz (40 ns) Write cycle (lowtime+hightime of WR strobe) 66ns (over 2 clock cycles)
     reset_in                : in std_logic;
+    
+    -- framebuffer read port
+    framebuffer_clkb_out    : out std_logic;
+    framebuffer_enb_out     : out std_logic;
+    framebuffer_addrb_out   : out std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
+    framebuffer_dob_in      : in  std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
     
     -- physical pins for ILI9341
     ili9341_CS_N_OUT        : out std_logic;    -- Active Low Chip Select
@@ -58,7 +65,7 @@ end ili9341_ctrl;
 
 architecture Behavioral of ili9341_ctrl is
 
-    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE, INIT, IDLE, ACTIVE, SEND_WORD_1, SEND_WORD_2 );
+    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE, INIT, ACTIVE, DATA_R, DATA_G, DATA_B, SEND_WORD_1, SEND_WORD_2 );
     
     signal state : t_state := HARDWARE_RESET;
     
@@ -92,61 +99,7 @@ architecture Behavioral of ili9341_ctrl is
         x"C_36",  -- CMD Memory Access Control
         x"D_48",  -- DAT Column Address Order, BGR
         
-        -- memory write: (Originally clear screen, looping through all pixels 240x320, here set a pixel to grey)
-        x"C_2C",  -- CMD Memory Write
-        
-        x"D_FF",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_FF",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_FF",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_FF",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_80",  -- DAT R
-        x"D_FF",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_80",  -- DAT R
-        x"D_FF",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_FF",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_FF",  -- DAT B
-        
-        x"D_80",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_FF",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
-        x"D_00",  -- DAT R
-        x"D_00",  -- DAT G
-        x"D_00",  -- DAT B
-        
+        -- normally we would wipe the screen here (write all to black)    
                
         -- resume setup (7 words)
         x"C_B1",  -- CMD Frame Rate Control Normal
@@ -155,7 +108,10 @@ architecture Behavioral of ili9341_ctrl is
         x"C_B3",  -- CMD Frame Rate Control Partial
         x"D_00",  -- DAT 70Hz 
         x"D_1B",  -- DAT 70Hz
-        x"C_29"   -- CMD Display ON 
+        x"C_29",  -- CMD Display ON 
+        
+        -- start memory write: (Originally clear screen, looping through all pixels 240x320, here set a pixel to grey)
+        x"C_2C"   -- CMD Memory Write 
         
     );
     
@@ -168,8 +124,48 @@ architecture Behavioral of ili9341_ctrl is
     signal delay_counter : integer := 0;
     signal init_mem_counter : integer := 0;
     
+    signal framebuffer_counter : integer := 0;
+    
+    -- 8 bits
+    
+    --  GGGRRRBB
+    signal pixel_data : std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
+    
+    -- 16 bit colour RGB 5-6-5 
+    
+    -- or
+    
+    -- 18 bit colour RGB 6-6-6 
+    signal red_data : std_logic_vector(7 downto 0);
+    signal green_data : std_logic_vector(7 downto 0);
+    signal blue_data : std_logic_vector(7 downto 0);
+    
     
 begin
+
+-- send the clock out for the read side RAM port
+framebuffer_clkb_out <= sysclk_in;
+
+
+framebuffer_addrb_out <= std_logic_vector(to_unsigned(framebuffer_counter, FRAMEBUFFER_ADDR_W));
+
+
+--OLD
+-- simple colour conversion from 8 bit 3-3-2 GRB to 16 bit 5-6-5 RGB
+-- create the missing LSBs with the MSB to get reasonable results 
+--red_data <= pixel_data(4 downto 2)& pixel_data(4)& pixel_data(4); -- pad from 3 bits to 5
+--green_data <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7);   -- pad from 3 bit to 6
+--blue_data <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1);    -- pad from 2 bit to 5
+
+--NEW
+-- simple colour conversion from 8 bit 3-3-2 GRB to 18 bit 6-6-6 RGB (top 2 bits are 0 padded)
+-- create the missing LSBs with the MSB to get reasonable results 
+red_data    <= pixel_data(4 downto 2) & pixel_data(4) & pixel_data(4) & pixel_data(4) & b"00"; -- MSB pad from 3 bits to 6, then add b"00" for unused bits
+green_data  <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7) & b"00";   -- MSB pad from 3 bit to 6, then add b"00" for unused bits
+blue_data   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1) & pixel_data(1) & b"00";    -- MSB pad from 2 bit to 6, then add b"00" for unused bits
+
+
+
 
 p_state_machine : process(sysclk_in) is
 
@@ -260,14 +256,45 @@ begin
                     
                     -- last pass
                     if init_mem_counter = INIT_MEM_ITEMS -1 then
-                        return_state <= IDLE;   -- initialisation finshed
+                        return_state <= ACTIVE;   -- initialisation finshed
+                        
+                        framebuffer_enb_out <= '1'; -- enable framebuffer read
+                        
+                        framebuffer_counter <= 0; -- setup read of first pixel
+                        
                     else 
                         return_state <= INIT;   -- continue sending commands
                     end if;
                 
                 when ACTIVE => 
                 
-                when IDLE => 
+                    state <= DATA_R;
+                    
+                    -- wrap round
+                    if framebuffer_counter = FRAMEBUFFER_DEPTH then
+                        framebuffer_counter <= 0;
+                    else
+                        framebuffer_counter <= framebuffer_counter + 1; -- increment address for next time
+                    end if;
+                    
+                    
+                    -- read pixel value from framebuffer, colour conversion happens combinationally above
+                    -- We use 18-bit colour for now, as the transfers are a bit nicer
+                    pixel_data <= framebuffer_dob_in; 
+                                        
+                
+                when DATA_R => 
+                    state <= SEND_WORD_1;
+                    word_to_send <= x"D" & red_data;
+                    return_state <= DATA_G;
+                when DATA_G =>
+                    state <= SEND_WORD_1;
+                    word_to_send <= x"D" & green_data;
+                    return_state <= DATA_B;
+                when DATA_B =>  
+                    state <= SEND_WORD_1;
+                    word_to_send <= x"D" & blue_data;
+                    return_state <= ACTIVE;
                 
                 
                 -- "subroutine" to send Command Words
