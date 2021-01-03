@@ -61,27 +61,25 @@ reset <= '0' after CLK_PERIOD * 2;
 
 u_ili9341_top : entity work.ili9341_top
 generic map (
-    SYSCLK_FREQ             => 25000000, -- 25 MHz  
+--    SYSCLK_FREQ             => 25000000, -- 25 MHz  
     SIM_DELAY_REDUCTION_FACTOR => 10000   -- reduce the 120ms delay to 12us to reduce sim time
 )
 Port map (
     
-    sysclk_in               => sysclk,  -- 25 MHz (40 ns) Write cycle (lowtime+hightime of WR strobe) 66ns (over 2 clock cycles)
-    reset_in              => reset,  
+    sysclk                  => sysclk,  -- 25 MHz (40 ns) Write cycle (lowtime+hightime of WR strobe) 66ns (over 2 clock cycles)
+    reset_in                => reset,  
     
     -- physical pins
-    ili9341_CS_N_OUT       => ili9341_CS_N   ,  -- Active Low Chip Select
-    ili9341_BLC_OUT        => ili9341_BLC    ,  -- Backlight Control  (active high)
-    ili9341_RESET_N_OUT    => ili9341_RESET_N,  -- active low reset
-    ili9341_WR_OUT         => ili9341_WR     ,  -- write strobe
-    ili9341_RS_OUT         => ili9341_RS     ,  -- Command/Data select        
-    ili9341_RD_OUT         => ili9341_RD     ,  -- read strobe
-    ili9341_VSYNC_OUT      => ili9341_VSYNC ,  -- control framerate (if enabled)
-    ili9341_FMARK_IN       => ili9341_FMARK   ,  -- receive pulse when frame writing complete (if enabled)
-        
-        
+    ili9341_CS_N       => ili9341_CS_N   ,  -- Active Low Chip Select
+    ili9341_BLC        => ili9341_BLC    ,  -- Backlight Control  (active high)
+    ili9341_RESET_N    => ili9341_RESET_N,  -- active low reset
+    ili9341_WR         => ili9341_WR     ,  -- write strobe
+    ili9341_RS         => ili9341_RS     ,  -- Command/Data select        
+    ili9341_RD         => ili9341_RD     ,  -- read strobe
+    ili9341_VSYNC      => ili9341_VSYNC ,  -- control framerate (if enabled)
+    ili9341_FMARK      => ili9341_FMARK   ,  -- receive pulse when frame writing complete (if enabled)
     -- (technically these are I/O but we shouldn't need to read anything from the device)
-    ili9341_DATA_OUT        => ili9341_DATA_OUT
+    ili9341_DATA        => ili9341_DATA_OUT
 );    
 
 

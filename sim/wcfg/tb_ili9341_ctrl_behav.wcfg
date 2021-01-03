@@ -12,14 +12,14 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="2085053fs"></ZoomEndTime>
+      <ZoomEndTime time="2073513fs"></ZoomEndTime>
       <Cursor1Time time="1000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="346"></NameColumnWidth>
-      <ValueColumnWidth column_width="266"></ValueColumnWidth>
+      <ValueColumnWidth column_width="262"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="34" />
+   <WVObjectSize size="33" />
    <wvobject fp_name="/tb_ili9341_ctrl/sysclk" type="logic">
       <obj_property name="ElementShortName">sysclk</obj_property>
       <obj_property name="ObjectShortName">sysclk</obj_property>
@@ -132,28 +132,28 @@
       <obj_property name="ElementShortName">framebuffer_dob_in[7:0]</obj_property>
       <obj_property name="ObjectShortName">framebuffer_dob_in[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/USE_INIT_FILE" type="other">
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/USE_INIT_FILE" type="logic">
       <obj_property name="ElementShortName">USE_INIT_FILE</obj_property>
       <obj_property name="ObjectShortName">USE_INIT_FILE</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/INIT_FILE_NAME" type="array">
-      <obj_property name="ElementShortName">INIT_FILE_NAME[1:37]</obj_property>
-      <obj_property name="ObjectShortName">INIT_FILE_NAME[1:37]</obj_property>
+      <obj_property name="ElementShortName">INIT_FILE_NAME[295:0]</obj_property>
+      <obj_property name="ObjectShortName">INIT_FILE_NAME[295:0]</obj_property>
+      <obj_property name="Radix">ASCIIRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DEPTH" type="other">
-      <obj_property name="ElementShortName">DEPTH</obj_property>
-      <obj_property name="ObjectShortName">DEPTH</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/ADDR_W" type="array">
+      <obj_property name="ElementShortName">ADDR_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ADDR_W[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/ADDR_W" type="other">
-      <obj_property name="ElementShortName">ADDR_W</obj_property>
-      <obj_property name="ObjectShortName">ADDR_W</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DATA_W" type="array">
+      <obj_property name="ElementShortName">DATA_W[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DATA_W[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DATA_W" type="other">
-      <obj_property name="ElementShortName">DATA_W</obj_property>
-      <obj_property name="ObjectShortName">DATA_W</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DEPTH" type="other">
-      <obj_property name="ElementShortName">DEPTH</obj_property>
-      <obj_property name="ObjectShortName">DEPTH</obj_property>
+   <wvobject fp_name="/tb_ili9341_ctrl/u_ili9341_top/u_framebuffer/DEPTH" type="array">
+      <obj_property name="ElementShortName">DEPTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DEPTH[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
 </wave_config>

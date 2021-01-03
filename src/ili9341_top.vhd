@@ -59,7 +59,9 @@ architecture Behavioral of ili9341_top is
 
     signal framebuffer_clkb : std_logic;
     signal framebuffer_enb  : std_logic;
+--    signal framebuffer_addra : std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
     signal framebuffer_addrb : std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
+--    signal framebuffer_dia  : std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
     signal framebuffer_dob  : std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
 
     -- mixed language support requires component declarations
@@ -135,15 +137,12 @@ u_framebuffer : simple_dual_two_clock_bram
         ena => '0',
         enb => framebuffer_enb,
         wea => '0', 
-        addra => (others => '0'),
+        addra => (others => '0'), 
         addrb => framebuffer_addrb, 
         dia => (others => '0'),
         dob => framebuffer_dob 
-    
     );
     
-    
-
 
 end architecture;
     
