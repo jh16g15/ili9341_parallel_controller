@@ -46,7 +46,7 @@ Port (
     
     -- framebuffer read port
     framebuffer_clkb_out    : out std_logic;
-    framebuffer_enb_out     : out std_logic;
+    framebuffer_enb_out     : out std_logic := '0';
     framebuffer_addrb_out   : out std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
     framebuffer_dob_in      : in  std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
     
@@ -65,7 +65,7 @@ end ili9341_ctrl;
 
 architecture Behavioral of ili9341_ctrl is
 
-    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE, INIT, ACTIVE, DATA_R, DATA_G, DATA_B, SEND_WORD_1, SEND_WORD_2 );
+    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE, INIT, ACTIVE, IDLE, DATA_R, DATA_G, DATA_B, SEND_WORD_1, SEND_WORD_2 );
     
     signal state : t_state := HARDWARE_RESET;
     
@@ -110,7 +110,7 @@ architecture Behavioral of ili9341_ctrl is
         x"D_1B",  -- DAT 70Hz
         x"C_29",  -- CMD Display ON 
         
-        -- start memory write: (Originally clear screen, looping through all pixels 240x320, here set a pixel to grey)
+        -- start memory write: (Originally clear screen, looping through all pixels 240x320 and setting to BLACK)
         x"C_2C"   -- CMD Memory Write 
         
     );
@@ -175,6 +175,7 @@ begin
             state <= HARDWARE_RESET;
             delay_counter <= 0;
             init_mem_counter <= 0;
+            framebuffer_enb_out <= '0'; -- disable reading from the framebuffer until we have initialised the display
         else
             case(state) is
                 when HARDWARE_RESET => 
@@ -271,7 +272,7 @@ begin
                     state <= DATA_R;
                     
                     -- wrap round
-                    if framebuffer_counter = FRAMEBUFFER_DEPTH then
+                    if framebuffer_counter = FRAMEBUFFER_DEPTH-1 then
                         framebuffer_counter <= 0;
                     else
                         framebuffer_counter <= framebuffer_counter + 1; -- increment address for next time
@@ -281,8 +282,8 @@ begin
                     -- read pixel value from framebuffer, colour conversion happens combinationally above
                     -- We use 18-bit colour for now, as the transfers are a bit nicer
                     pixel_data <= framebuffer_dob_in; 
-                                        
                 
+
                 when DATA_R => 
                     state <= SEND_WORD_1;
                     word_to_send <= x"D" & red_data;
