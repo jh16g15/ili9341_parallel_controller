@@ -6,9 +6,17 @@ This project is compiled for a Digilent BASYS-3 board, (Xilinx Artix-7 35T)
 
 ## Status
 
-This project currently successfully resets and powers up the ILI9341 and writes a small strip of Red, Green and Blue pixels to the top line of the screen.
+This project currently successfully resets and powers up the ILI9341. Using a separate framebuffer in the FPGA BRAM, it copies data from this onto the ILI9341 GRAM to be displayed on the screen. This framebuffer is 240x320 pixels with 8 bits per pixel (GGGRRRBB). When each pixel is read, the colour data is upscaled to 18-bit 6-6-6 RGB and sent to the ILI9341 Display RAM (GRAM).
 
-## Planned Features
+At current clock frequency of 25MHz, we get framerates of 46 FPS. This figure is from copying the entire contents of the BRAM over, and is constant. Measures to improve the framerate are discussed below:
 
-- Add a standard BRAM interface to allow the controller to read from an internal FPGA Block RAM framebuffer, as reads from the ILI9341 frame memory are very slow. This decoupling will make it far easier to use, as the user can then interface with a standard BRAM using, for example a Microblaze soft processor to easily update the screen contents, rather than requiring a state machine to initialise the screen contents.
-- Colour conversion to allow the internal FPGA framebuffer to use up less memory (16-bit 240x320 framebuffer would require 70% of the 1.8Mb BRAM on the A7-35T, so we can reduce this requirement by switching to 8-bit or 9-bit colour)
+## Future Work
+
+ - Investigate FMAX of the ILI9341 in 8-bit parallel MCU mode 8080-I. This is more of a curiosity, as clock-domain crossing is handled by the dual-clock BRAM framebuffer and by switching to 16-bit colour gets us to 60FPS.
+
+ - Change from 18-bit colour to 16-bit colour to reduce transfers per pixel from 3 to 2, increasing our framerate @ 25MHz to 65FPS. It does make the simulation waveforms harder to read when debugging, however.
+
+ - Add framerate control using FMARK (TE) or VSYNC to remove screen tearing. FMARK (if enabled) is sent from the ILI9341 with vsync information. VSYNC is sent to the ILI9341 to manage the screen refresh cycles
+
+
+

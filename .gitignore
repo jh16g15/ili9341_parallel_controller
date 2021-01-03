@@ -24,3 +24,5 @@ ip_upgrade.log
 # ignore software build directory
 /software/build/
 
+/resources/edited/
+/resources/raw*/
