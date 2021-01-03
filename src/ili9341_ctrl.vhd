@@ -24,7 +24,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if instantiating
 -- any Xilinx leaf cells in this code.
@@ -34,7 +34,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity ili9341_ctrl is
 generic (
     SYSCLK_FREQ             : integer := 25000000; -- 25 MHz 
-    SIM_DELAYS              : boolean := false
+    SIM_DELAY_REDUCTION_FACTOR : integer := 1;      -- 1 for disabled
+    FRAMEBUFFER_ADDR_W      : integer := 17;
+    FRAMEBUFFER_READ_SIZE   : integer := 8
 );
 Port (
     
@@ -66,8 +68,9 @@ architecture Behavioral of ili9341_ctrl is
     signal word_to_send : std_logic_vector(8+4-1 downto 0); -- cmd/data tacked on the top of the data byte
     signal data_count_to_send : integer;
     
-    constant NUM_PIXELS : integer := 13;
-    constant INIT_MEM_ITEMS : integer := 2 + 8 + 7 + 1 + 3*NUM_PIXELS;
+    -- number of pixels written in INIT_MEM
+    constant INIT_NUM_PIXELS : integer := 0;
+    constant INIT_MEM_ITEMS : integer := 2 + 8 + 7 + 1 + 3*INIT_NUM_PIXELS;
     
     type t_init_mem is array (0 to INIT_MEM_ITEMS-1) of std_logic_vector(11 downto 0); -- top char is command/data select
     
@@ -160,12 +163,8 @@ architecture Behavioral of ili9341_ctrl is
     -- time delays (sysclk-adaptive)
     constant SYSCLK_PERIOD_NS : integer := 1000000000 / SYSCLK_FREQ;   -- eg 40ns for 25MHz
     constant DELAY_10_US : integer := 10 * 1000 / SYSCLK_PERIOD_NS;
-    constant DELAY_120_MS : integer := 120 * 1000000 / SYSCLK_PERIOD_NS;
+    constant DELAY_120_MS : integer := 120 * 1000000 / SYSCLK_PERIOD_NS / SIM_DELAY_REDUCTION_FACTOR;
 
-    -- DEBUG Delay value Constants for Simulations
---    constant DELAY_10_US : integer := 10;
---    constant DELAY_120_MS : integer := 120;
-    
     signal delay_counter : integer := 0;
     signal init_mem_counter : integer := 0;
     

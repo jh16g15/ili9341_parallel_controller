@@ -61,7 +61,8 @@ sysclk <= not sysclk after CLK_PERIOD/2;
 
 u_ili9341_ctrl : entity work.ili9341_ctrl
 generic map (
-    SYSCLK_FREQ             => 25000000 -- 25 MHz  
+    SYSCLK_FREQ             => 25000000, -- 25 MHz  
+    SIM_DELAY_REDUCTION_FACTOR => 10000   -- reduce the 120ms delay to 12us to reduce sim time
 )
 Port map (
     
