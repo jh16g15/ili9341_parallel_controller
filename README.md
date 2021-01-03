@@ -2,7 +2,11 @@
 
 ## Hardware
 
-This project is compiled for a Digilent BASYS-3 board, (Xilinx Artix-7 35T)
+This project is compiled for a Digilent BASYS-3 board, (Xilinx Artix-7 35T), however the VHDL should be fairly portable with only the 100MHz -> 25MHz PLL being a Xilinx IP core.
+
+It also uses an ILI9341-based Display Module from the University of Southampton for the Il Matto microcontroller board (see https://www.ecs.soton.ac.uk/outreach/kits/micro-arcana-series).
+
+If you have one of these boards, you can find a breakout PCB that converts it into a Dual 2x6 PMOD interface in the pcb/ folder. If you do not, you should be able to use another ILI9341 board as long as it is wired up to the the 8-bit Parallel 8080-I MCU interface rather than the more common SPI interface that most of these arduino-compatible boards come with.
 
 ## Status
 
