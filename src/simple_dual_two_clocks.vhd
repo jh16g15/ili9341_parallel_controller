@@ -46,7 +46,7 @@ architecture syn of simple_dual_two_clocks is
     begin
         for I in ram_type'range loop
             readline (RamFile, RamFileLine);
-            read (RamFileLine, RAM(I));
+            hread (RamFileLine, RAM(I));
         end loop;
         return RAM;
     end function;	
