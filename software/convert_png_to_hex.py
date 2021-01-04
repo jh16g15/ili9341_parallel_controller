@@ -1,5 +1,6 @@
-# from Ben Eater
+# Based on Ben Eater's Image conversion code seen here
 # https://www.youtube.com/watch?v=uqY3FMuMuRo
+
 from PIL import Image
 
 IMAGE_LOC = "D:/Documents/vivado/ili9341_parallel_controller/resources/edited/"

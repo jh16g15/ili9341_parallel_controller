@@ -22,5 +22,9 @@ At current clock frequency of 25MHz, we get framerates of 46 FPS. This figure is
 
  - Add framerate control using FMARK (TE) or VSYNC to remove screen tearing. FMARK (if enabled) is sent from the ILI9341 with vsync information. VSYNC is sent to the ILI9341 to manage the screen refresh cycles
 
+ - Improve the python conversion image script to take arguments for the file to convert
+
+ - Reorder the GIMP Palette so that it outputs RRRGGGBB instead of GGGRRRBB to make the VHDL easier to understand
+
 
 
