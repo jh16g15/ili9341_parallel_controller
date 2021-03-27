@@ -71,9 +71,9 @@ architecture Behavioral of ili9341_ctrl is
     
     -- subroutine control 
     signal return_state : t_state;
-    signal send_cmd_or_data : std_logic;
+--    signal send_cmd_or_data : std_logic;
     signal word_to_send : std_logic_vector(8+4-1 downto 0); -- cmd/data tacked on the top of the data byte
-    signal data_count_to_send : integer;
+--    signal data_count_to_send : integer;
     
     -- number of pixels written in INIT_MEM
     constant INIT_NUM_PIXELS : integer := 0;
@@ -139,6 +139,20 @@ architecture Behavioral of ili9341_ctrl is
     signal red_data : std_logic_vector(7 downto 0);
     signal green_data : std_logic_vector(7 downto 0);
     signal blue_data : std_logic_vector(7 downto 0);
+    
+    attribute mark_debug : boolean;
+    attribute mark_debug of state : signal is true;
+--    attribute mark_debug of send_cmd_or_data : signal is true;
+    attribute mark_debug of word_to_send : signal is true;
+--    attribute mark_debug of data_count_to_send : signal is true;
+    attribute mark_debug of delay_counter : signal is true;
+    attribute mark_debug of init_mem_counter : signal is true;
+    attribute mark_debug of framebuffer_counter : signal is true;
+    
+    attribute mark_debug of reset_in: signal is true;
+    attribute mark_debug of framebuffer_read_en_out   : signal is true;
+    attribute mark_debug of framebuffer_read_addr_out : signal is true;
+    attribute mark_debug of framebuffer_read_data_in  : signal is true;
     
     
 begin
