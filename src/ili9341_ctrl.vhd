@@ -37,7 +37,8 @@ generic (
     SIM_DELAY_REDUCTION_FACTOR : integer := 1;      -- 1 for disabled
     FRAMEBUFFER_ADDR_W      : integer := 17;
     FRAMEBUFFER_READ_SIZE   : integer := 8;
-    FRAMEBUFFER_DEPTH       : integer := 76800
+    FRAMEBUFFER_DEPTH       : integer := 76800;
+    COLOUR_MODE_BITS        : integer := 16   -- 16 or 18, need to update ILI9341_INIT_MEM
 );
 Port (
     
@@ -65,7 +66,11 @@ end ili9341_ctrl;
 
 architecture Behavioral of ili9341_ctrl is
 
-    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE, INIT, ACTIVE, IDLE, DATA_R, DATA_G, DATA_B, SEND_WORD_1, SEND_WORD_2 );
+    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE,
+                     INIT, ACTIVE, IDLE, 
+                     DATA_R, DATA_G, DATA_B,      -- 18 bit colour 
+                     DATA_RG, DATA_GB,              -- 16 bit colour
+                     SEND_WORD_1, SEND_WORD_2 );
     
     signal state : t_state := HARDWARE_RESET;
     
@@ -95,7 +100,7 @@ architecture Behavioral of ili9341_ctrl is
         x"C_13",  -- CMD Normal Display Mode ON
         x"C_20",  -- CMD Display Inversion OFF
         x"C_3A",  -- CMD COLMOD Pixel Format Set
-        x"D_66",  -- DAT 16 Bits Per Pixel(0x55)  18 Bits per Pixel (0x66)
+        x"D_55",  -- DAT 16 Bits Per Pixel(0x55)  18 Bits per Pixel (0x66)          -- We need to change this to 
         x"C_36",  -- CMD Memory Access Control
         x"D_48",  -- DAT Column Address Order, BGR
         
@@ -132,13 +137,17 @@ architecture Behavioral of ili9341_ctrl is
     signal pixel_data : std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
     
     -- 16 bit colour RGB 5-6-5 
-    
+    signal red_data5 : std_logic_vector(4 downto 0);
+    signal green_data6 : std_logic_vector(5 downto 0);
+    signal blue_data5 : std_logic_vector(4 downto 0);
     -- or
     
     -- 18 bit colour RGB 6-6-6 
-    signal red_data : std_logic_vector(7 downto 0);
-    signal green_data : std_logic_vector(7 downto 0);
-    signal blue_data : std_logic_vector(7 downto 0);
+    signal red_data8 : std_logic_vector(7 downto 0);
+    signal green_data8 : std_logic_vector(7 downto 0);
+    signal blue_data8 : std_logic_vector(7 downto 0);
+    
+
     
     attribute mark_debug : boolean;
     attribute mark_debug of state : signal is true;
@@ -164,20 +173,20 @@ framebuffer_read_clk_out <= sysclk_in;
 framebuffer_read_addr_out <= std_logic_vector(to_unsigned(framebuffer_counter, FRAMEBUFFER_ADDR_W));
 
 
---OLD
--- simple colour conversion from 8 bit 3-3-2 GRB to 16 bit 5-6-5 RGB
--- create the missing LSBs with the MSB to get reasonable results 
---red_data <= pixel_data(4 downto 2)& pixel_data(4)& pixel_data(4); -- pad from 3 bits to 5
---green_data <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7);   -- pad from 3 bit to 6
---blue_data <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1);    -- pad from 2 bit to 5
-
---NEW
+-- 18bit
 -- simple colour conversion from 8 bit 3-3-2 GRB to 18 bit 6-6-6 RGB (top 2 bits are 0 padded)
 -- create the missing LSBs with the MSB to get reasonable results 
-red_data    <= pixel_data(4 downto 2) & pixel_data(4) & pixel_data(4) & pixel_data(4) & b"00"; -- MSB pad from 3 bits to 6, then add b"00" for unused bits
-green_data  <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7) & b"00";   -- MSB pad from 3 bit to 6, then add b"00" for unused bits
-blue_data   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1) & pixel_data(1) & b"00";    -- MSB pad from 2 bit to 6, then add b"00" for unused bits
+red_data8    <= pixel_data(4 downto 2) & pixel_data(4) & pixel_data(4) & pixel_data(4) & b"00"; -- MSB pad from 3 bits to 6, then add b"00" for unused bits
+green_data8  <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7) & b"00";   -- MSB pad from 3 bit to 6, then add b"00" for unused bits
+blue_data8   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1) & pixel_data(1) & b"00";    -- MSB pad from 2 bit to 6, then add b"00" for unused bits
 
+
+-- 16-bit colour (faster data movement 10cycles pp -> 7 cycles pp)
+-- simple colour conversion from 8 bit 3-3-2 GRB to 16 bit 5-6-5 RGB
+-- create the missing LSBs with the MSB to get reasonable results
+red_data5    <= pixel_data(4 downto 2) & pixel_data(4) & pixel_data(4);                  -- MSB pad from 3 bits to 5
+green_data6  <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7);   -- MSB pad from 3 bit to 6
+blue_data5   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1);    -- MSB pad from 2 bit to 5
 
 
 
@@ -282,9 +291,11 @@ begin
                     end if;
                 
                 when ACTIVE => 
-                
-                    state <= DATA_R;
-                    
+                    if (COLOUR_MODE_BITS=16)then 
+                        state <= DATA_RG;   -- 16 bit colour
+                    else                    -- 18 bit colour
+                        state <= DATA_R;
+                    end if;           
                     -- wrap round
                     if framebuffer_counter = FRAMEBUFFER_DEPTH-1 then
                         framebuffer_counter <= 0;
@@ -297,20 +308,29 @@ begin
                     -- We use 18-bit colour for now, as the transfers are a bit nicer
                     pixel_data <= framebuffer_read_data_in; 
                 
-
+                -- 18 bit colour
                 when DATA_R => 
                     state <= SEND_WORD_1;
-                    word_to_send <= x"D" & red_data;
+                    word_to_send <= x"D" & red_data8;
                     return_state <= DATA_G;
                 when DATA_G =>
                     state <= SEND_WORD_1;
-                    word_to_send <= x"D" & green_data;
+                    word_to_send <= x"D" & green_data8;
                     return_state <= DATA_B;
                 when DATA_B =>  
                     state <= SEND_WORD_1;
-                    word_to_send <= x"D" & blue_data;
+                    word_to_send <= x"D" & blue_data8;
                     return_state <= ACTIVE;
                 
+                -- 16 bit colour
+                when DATA_RG => 
+                    state <= SEND_WORD_1;
+                    word_to_send <= x"D" & red_data5 & green_data6(5 downto 3);
+                    return_state <= DATA_GB;
+                when DATA_GB =>
+                    state <= SEND_WORD_1;
+                    word_to_send <= x"D" & green_data6(2 downto 0) & blue_data5;
+                    return_state <= ACTIVE;
                 
                 -- "subroutine" to send Command Words
                 when SEND_WORD_1 =>
