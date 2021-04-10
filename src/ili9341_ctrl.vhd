@@ -51,6 +51,9 @@ Port (
     framebuffer_read_addr_out   : out std_logic_vector(FRAMEBUFFER_ADDR_W-1 downto 0);
     framebuffer_read_data_in    : in  std_logic_vector(FRAMEBUFFER_READ_SIZE-1 downto 0);
     
+    frame_copy_complete_done_set : out STD_LOGIC; -- pulse this for 1 cycle when we've finished copying out of the framebuffer
+    frame_write_complete_done   : in STD_LOGIC;   -- poll this before we start copying the frame (self clearing, so only high for one cycle, Make sure we use xpm_cdc_pulse.)
+        
     -- physical pins for ILI9341
     ili9341_CS_N_OUT        : out std_logic;    -- Active Low Chip Select
     ili9341_BLC_OUT         : out std_logic;    -- Backlight Control  (active high)
@@ -61,16 +64,16 @@ Port (
     ili9341_VSYNC_OUT       : out std_logic;    -- control framerate (if enabled)
     ili9341_FMARK_IN       : in std_logic;      -- receive pulse when frame writing complete (if enabled)
     ili9341_DATA_OUT : out std_logic_vector(7 downto 0) -- (technically these are I/O but we shouldn't need to read anything from the device)
-);    
+);
 end ili9341_ctrl;
 
 architecture Behavioral of ili9341_ctrl is
 
-    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE,
-                     INIT, ACTIVE, IDLE, 
-                     DATA_R, DATA_G, DATA_B,      -- 18 bit colour 
-                     DATA_RG, DATA_GB,              -- 16 bit colour
-                     SEND_WORD_1, SEND_WORD_2 );
+    type t_state is (HARDWARE_RESET, LEAVE_HW_RESET, LEAVE_SLEEP_MODE, WAIT_TO_EXIT_SLEEP_MODE, --0,1,2,3
+                     INIT, ACTIVE, WAIT_FOR_NEXT,                                               --4,5,6
+                     DATA_R, DATA_G, DATA_B,      -- 18 bit colour                              --7,8,9
+                     DATA_RG, DATA_GB,              -- 16 bit colour                            --10,11
+                     SEND_WORD_1, SEND_WORD_2 );                                                --12,13
     
     signal state : t_state := HARDWARE_RESET;
     
@@ -130,6 +133,7 @@ architecture Behavioral of ili9341_ctrl is
     signal init_mem_counter : integer := 0;
     
     signal framebuffer_counter : integer := 0;
+    signal last_pixel_flag : std_logic := '0';
     
     -- 8 bits
     
@@ -162,6 +166,8 @@ architecture Behavioral of ili9341_ctrl is
     attribute mark_debug of framebuffer_read_en_out   : signal is true;
     attribute mark_debug of framebuffer_read_addr_out : signal is true;
     attribute mark_debug of framebuffer_read_data_in  : signal is true;
+    attribute mark_debug of frame_copy_complete_done_set : signal is true;
+    attribute mark_debug of frame_write_complete_done : signal is true;
     
     
 begin
@@ -199,6 +205,7 @@ begin
             delay_counter <= 0;
             init_mem_counter <= 0;
             framebuffer_read_en_out <= '0'; -- disable reading from the framebuffer until we have initialised the display
+            last_pixel_flag <= '0';
         else
             case(state) is
                 when HARDWARE_RESET => 
@@ -280,7 +287,7 @@ begin
                     
                     -- last pass
                     if init_mem_counter = INIT_MEM_ITEMS -1 then
-                        return_state <= ACTIVE;   -- initialisation finshed
+                        return_state <= WAIT_FOR_NEXT;   -- initialisation finshed
                         
                         framebuffer_read_en_out <= '1'; -- enable framebuffer read
                         
@@ -290,6 +297,15 @@ begin
                         return_state <= INIT;   -- continue sending commands
                     end if;
                 
+                when WAIT_FOR_NEXT => 
+                    -- wait for a finished frame in the BRAM
+                    frame_copy_complete_done_set <= '0'; -- end pulse
+                    
+                    if frame_write_complete_done = '1' then
+                        state <= ACTIVE;    -- start memcpy to display GRAM 
+                    end if;
+                    
+                
                 when ACTIVE => 
                     if (COLOUR_MODE_BITS=16)then 
                         state <= DATA_RG;   -- 16 bit colour
@@ -298,9 +314,13 @@ begin
                     end if;           
                     -- wrap round
                     if framebuffer_counter = FRAMEBUFFER_DEPTH-1 then
+                        -- this is our last pixel of the frame
                         framebuffer_counter <= 0;
+                        last_pixel_flag <= '1';
+                        
                     else
                         framebuffer_counter <= framebuffer_counter + 1; -- increment address for next time
+                        last_pixel_flag <= '0';
                     end if;
                     
                     
@@ -320,8 +340,13 @@ begin
                 when DATA_B =>  
                     state <= SEND_WORD_1;
                     word_to_send <= x"D" & blue_data8;
-                    return_state <= ACTIVE;
-                
+                    if last_pixel_flag = '1' then
+                        return_state <= WAIT_FOR_NEXT;
+                        frame_copy_complete_done_set <= '1';    -- set interrupt register (polled and cleared by PS)
+                    else 
+                        return_state <= ACTIVE;
+                    end if;                                    
+                    
                 -- 16 bit colour
                 when DATA_RG => 
                     state <= SEND_WORD_1;
@@ -330,7 +355,12 @@ begin
                 when DATA_GB =>
                     state <= SEND_WORD_1;
                     word_to_send <= x"D" & green_data6(2 downto 0) & blue_data5;
-                    return_state <= ACTIVE;
+                    if last_pixel_flag = '1' then
+                        return_state <= WAIT_FOR_NEXT;
+                        frame_copy_complete_done_set <= '1';    -- set interrupt register (polled and cleared by PS)
+                    else 
+                        return_state <= ACTIVE;
+                    end if; 
                 
                 -- "subroutine" to send Command Words
                 when SEND_WORD_1 =>
