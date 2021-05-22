@@ -36,7 +36,7 @@ generic (
     SYSCLK_FREQ             : integer := 25000000; -- 25 MHz 
     SIM_DELAY_REDUCTION_FACTOR : integer := 1;      -- 1 for disabled
     FRAMEBUFFER_ADDR_W      : integer := 17;
-    FRAMEBUFFER_READ_SIZE   : integer := 8;
+    FRAMEBUFFER_READ_SIZE   : integer := 16;
     FRAMEBUFFER_DEPTH       : integer := 76800;
     COLOUR_MODE_BITS        : integer := 16   -- 16 or 18, need to update ILI9341_INIT_MEM
 );
@@ -190,10 +190,15 @@ blue_data8   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_d
 -- 16-bit colour (faster data movement 10cycles pp -> 7 cycles pp)
 -- simple colour conversion from 8 bit 3-3-2 GRB to 16 bit 5-6-5 RGB
 -- create the missing LSBs with the MSB to get reasonable results
-red_data5    <= pixel_data(4 downto 2) & pixel_data(4) & pixel_data(4);                  -- MSB pad from 3 bits to 5
-green_data6  <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7);   -- MSB pad from 3 bit to 6
-blue_data5   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1);    -- MSB pad from 2 bit to 5
+--red_data5    <= pixel_data(4 downto 2) & pixel_data(4) & pixel_data(4);                  -- MSB pad from 3 bits to 5
+--green_data6  <= pixel_data(7 downto 5) & pixel_data(7) & pixel_data(7) & pixel_data(7);   -- MSB pad from 3 bit to 6
+--blue_data5   <= pixel_data(1 downto 0) & pixel_data(1) & pixel_data(1) & pixel_data(1);    -- MSB pad from 2 bit to 5
 
+
+-- now with 16-bit pixels from framebuffer 5-6-5 RGB
+red_data5   <= pixel_data(15 downto 11);
+green_data6 <= pixel_data(10 downto 5);
+blue_data5 <= pixel_data(4 downto 0);
 
 
 p_state_machine : process(sysclk_in) is
